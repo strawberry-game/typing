@@ -127,6 +127,15 @@
       color:var(--sub);
       line-height:1.8;
     }
+    .mobileInput{
+      position:absolute;
+      left:-9999px;
+      top:auto;
+      width:1px;
+      height:1px;
+      opacity:0.01;
+      pointer-events:none;
+    }
     .controls{
       display:flex;
       flex-wrap:wrap;
@@ -241,9 +250,21 @@
           <div class="guideBox">
             <div class="guide">
               ルール：1文字正解で10点、ミス1回で2点減点です。時間切れになると結果が表示されます。<br>
-              「ゲーム開始」を押したら、そのままキーボードで入力してください。
+              「ゲーム開始」を押したら、そのままキーボードで入力してください。スマホでは開始時にキーボードを表示します。
             </div>
           </div>
+
+          <input
+            type="text"
+            id="mobileTypingInput"
+            class="mobileInput"
+            autocomplete="off"
+            autocapitalize="off"
+            autocorrect="off"
+            spellcheck="false"
+            inputmode="latin"
+            aria-hidden="true"
+          >
 
           <div class="controls">
             <button class="primary" id="startBtn">ゲーム開始</button>
@@ -286,6 +307,7 @@
     const accuracyValue = document.getElementById('accuracyValue');
     const jpText = document.getElementById('jpText');
     const romanText = document.getElementById('romanText');
+    const mobileTypingInput = document.getElementById('mobileTypingInput');
     const startBtn = document.getElementById('startBtn');
     const retryBtn = document.getElementById('retryBtn');
     const resultBox = document.getElementById('resultBox');
@@ -365,6 +387,8 @@
       resultBox.classList.remove('show');
       updateStatus();
       nextQuestion();
+      mobileTypingInput.value = '';
+      focusTypingInput();
 
       timerId = setInterval(() => {
         remainingTime--;
@@ -396,19 +420,24 @@
       resultBox.classList.add('show');
       jpText.textContent = 'おつかれさまでした';
       romanText.textContent = 'finish';
+      mobileTypingInput.blur();
     }
 
-    document.addEventListener('keydown', function(event){
-      if(!playing) return;
+    function focusTypingInput(){
+      if(!mobileTypingInput) return;
+      mobileTypingInput.focus({ preventScroll: true });
+    }
 
-      if (event.ctrlKey || event.metaKey || event.altKey) return;
-      if(event.key.length !== 1){
-        return;
-      }
+    function keepTypingFocus(){
+      if(!playing) return;
+      focusTypingInput();
+    }
+
+    function handleTypedChar(inputChar){
+      if(!playing || !currentQuestion) return;
+      if(!inputChar || inputChar.length !== 1) return;
 
       const expected = currentQuestion.roman[currentIndex];
-      const inputChar = event.key;
-
       totalTyped++;
 
       if(inputChar === expected){
@@ -428,11 +457,40 @@
       }
 
       updateStatus();
-      event.preventDefault();
+    }
+
+    mobileTypingInput.addEventListener('input', function(){
+      const value = mobileTypingInput.value;
+      if(!value) return;
+
+      for(const ch of value){
+        handleTypedChar(ch);
+      }
+
+      mobileTypingInput.value = '';
     });
 
-    startBtn.addEventListener('click', startGame);
-    retryBtn.addEventListener('click', startGame);
+    mobileTypingInput.addEventListener('keydown', function(event){
+      if(!playing) return;
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      if(event.key === 'Enter' || event.key === 'Tab'){
+        event.preventDefault();
+      }
+    });
+
+    document.addEventListener('click', function(){
+      keepTypingFocus();
+    });
+
+    startBtn.addEventListener('click', function(){
+      startGame();
+      setTimeout(focusTypingInput, 50);
+    });
+
+    retryBtn.addEventListener('click', function(){
+      startGame();
+      setTimeout(focusTypingInput, 50);
+    });
 
     updateStatus();
   </script>
