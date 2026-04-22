@@ -25,12 +25,16 @@
       color:var(--text);
       background:linear-gradient(135deg,var(--bg1),var(--bg2));
       min-height:100vh;
-      padding-bottom:60px;
+      display:flex;
+      flex-direction:column;
+      overflow-x:hidden;
     }
     .wrap{
       max-width:960px;
       margin:0 auto;
       padding:24px 16px 40px;
+      flex:1 0 auto;
+      width:100%;
     }
     .title{
       text-align:center;
@@ -184,18 +188,17 @@
       color:var(--accent);
       margin-bottom:8px;
     }
-    .footer-fixed{
-      position:fixed;
-      bottom:0;
-      left:0;
+    .site-footer{
       width:100%;
+      margin-top:40px;
       background:rgba(0,0,0,0.7);
       backdrop-filter:blur(6px);
       color:#cbd5e1;
       text-align:center;
-      padding:12px 10px;
+      padding:20px 16px;
       font-size:13px;
       border-top:1px solid rgba(255,255,255,0.1);
+      letter-spacing:0.08em;
     }
 
     @media (max-width: 820px){
@@ -495,8 +498,8 @@
     updateStatus();
   </script>
 
-  <div class="footer-fixed">
+  <footer class="site-footer">
     © 2026 STRAWBERRY ALL RIGHTS RESERVED.
-  </div>
+  </footer>
 </body>
 </html>
